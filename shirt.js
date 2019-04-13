@@ -34,7 +34,7 @@ function knit(){
 
 	kCode += setup();
 
-	kCode += castOn(carriers[0], sleeve0Min, sleeve0Max, sleeve0Max+1);
+	kCode += castOn(carriers[0], sleeve0Min, sleeve0Max, sleeve0Max+1, true, sleeve1Max+1);
 	for (var r = 0; r < sleeveHeight; r++){
 		if (r % 2 == 0){
 			for (let n = sleeve0Max; n >= sleeve0Min; --n) {
@@ -51,9 +51,11 @@ function knit(){
 		}
 	}
 
-	kCode += ("outhook " + carriers[0] + "\n");
+	// kCode += ("tuck + b" + (sleeve0Max + 2) + " " + carriers[0] + "\n");
+	// kCode += ("tuck + f" + bodyMin + " " + carriers[0] + "\n");
+	// kCode += ("outhook " + carriers[0] + "\n");
 
-	kCode += castOn(carriers[0], bodyMin, bodyMax, bodyMax+1);
+	kCode += castOn(carriers[0], bodyMin, bodyMax, bodyMax+1, false);
 	for (var r = 0; r < bodyHeight; r++){
 		if (r % 2 == 0){
 			for (let n = bodyMax; n >= bodyMin; --n) {
@@ -69,10 +71,11 @@ function knit(){
 			}
 		}
 	}
+	// kCode += ("tuck + b" + (bodyMax + 2) + " " + carriers[0] + "\n");
+	// kCode += ("tuck + f" + sleeve1Min + " " + carriers[0] + "\n");
+	// kCode += ("outhook " + carriers[0] + "\n");
 
-	kCode += ("outhook " + carriers[0] + "\n");
-
-	kCode += castOn(carriers[0], sleeve1Min, sleeve1Max, sleeve1Max+1);
+	kCode += castOn(carriers[0], sleeve1Min, sleeve1Max, sleeve1Max+1, false);
 	for (var r = 0; r < sleeveHeight; r++){
 		if (r % 2 == 0){
 			for (let n = sleeve1Max; n >= sleeve1Min; --n) {
@@ -178,9 +181,12 @@ function knit(){
 	writeFile(kCode);
 }
 
-function castOn(carrier, min, max, overallMax){
+function castOn(carrier, min, max, overallMax, isCastOn, ultimateMax){
 	let code = "";
-	code += ("inhook " + carrier + "\n");
+	if (isCastOn){
+		code += ("inhook " + carrier + "\n");
+		code += ("miss - f" + ultimateMax + " " + carrier + "\n");
+	}
 
 	//cast-on on the front bed first...
 	for (let n = max; n >= min; --n) {
@@ -206,7 +212,9 @@ function castOn(carrier, min, max, overallMax){
 		}
 	}
 
-	code += ("releasehook " + carrier + "\n");
+	if (isCastOn){
+		code += ("releasehook " + carrier + "\n");
+	}
 
 	//knit waste yarn rows
 	code += knitPlainStitches(carrier, 12, min, max, false);

@@ -8,13 +8,13 @@ let sleeveHeight = 50;
 let bodyHeight = 40;
 let shoulderHeight = 26;
 
-let carriers = ["1", "2", "3"];
+let carrier = "1";
 let nylonYarn = "4";
 
 /*
 Operation:
 
-Knits a small shirt-like shape using three carriers.
+Knits a small shirt-like shape using one carrier.
 */
 
 knit();
@@ -34,59 +34,22 @@ function knit(){
 
 	kCode += setup();
 
-	kCode += castOn(carriers[0], sleeve0Min, sleeve0Max, sleeve0Max+1, true, sleeve1Max+1);
-	for (var r = 0; r < sleeveHeight; r++){
-		if (r % 2 == 0){
-			for (let n = sleeve0Max; n >= sleeve0Min; --n) {
-				if (n % 2 === 0){
-					kCode += ("knit - f" + n + " " + carriers[0] + "\n");
-				}
-			}
-		} else {
-			for (let n = sleeve0Min; n <= sleeve0Max; ++n) {
-				if (n % 2 === 1){
-					kCode += ("knit + b" + n + " " + carriers[0] + "\n");
-				}
-			}
-		}
-	}
+	kCode += knitSegment(carrier, sleeve0Min, sleeve0Max, sleeveHeight);
 
-	// kCode += ("tuck + b" + (sleeve0Max + 2) + " " + carriers[0] + "\n");
-	// kCode += ("tuck + f" + bodyMin + " " + carriers[0] + "\n");
-	// kCode += ("outhook " + carriers[0] + "\n");
+	kCode += knitSegment(carrier, bodyMin, bodyMax, bodyHeight);
 
-	kCode += castOn(carriers[0], bodyMin, bodyMax, bodyMax+1, false);
-	for (var r = 0; r < bodyHeight; r++){
-		if (r % 2 == 0){
-			for (let n = bodyMax; n >= bodyMin; --n) {
-				if (n % 2 === 0){
-					kCode += ("knit - f" + n + " " + carriers[0] + "\n");
-				}
-			}
-		} else {
-			for (let n = bodyMin; n <= bodyMax; ++n) {
-				if (n % 2 === 1){
-					kCode += ("knit + b" + n + " " + carriers[0] + "\n");
-				}
-			}
-		}
-	}
-	// kCode += ("tuck + b" + (bodyMax + 2) + " " + carriers[0] + "\n");
-	// kCode += ("tuck + f" + sleeve1Min + " " + carriers[0] + "\n");
-	// kCode += ("outhook " + carriers[0] + "\n");
-
-	kCode += castOn(carriers[0], sleeve1Min, sleeve1Max, sleeve1Max+1, false);
+	kCode += castOn(carrier, sleeve1Min, sleeve1Max, sleeve1Max+1);
 	for (var r = 0; r < sleeveHeight; r++){
 		if (r % 2 == 0){
 			for (let n = sleeve1Max; n >= sleeve1Min; --n) {
 				if (n % 2 === 0){
-					kCode += ("knit - f" + n + " " + carriers[0] + "\n");
+					kCode += ("knit - f" + n + " " + carrier + "\n");
 				}
 			}
 		} else {
 			for (let n = sleeve1Min; n <= sleeve1Max; ++n) {
 				if (n % 2 === 1){
-					kCode += ("knit + b" + n + " " + carriers[0] + "\n");
+					kCode += ("knit + b" + n + " " + carrier + "\n");
 				}
 			}
 		}
@@ -121,18 +84,18 @@ function knit(){
 		//knitting the shoulders using thread from the rightmost sleeve, so the thread is continuous
 		if (r % 2 == 0){
 			for (let n = shoulderMax; n >= shoulderMin; --n) {
-				if (r === 0 && ((n >= bodyMax && n <= sleeve1Min) || (n >= sleeve0Max && n <= bodyMin))) {
-					kCode += ("knit - " + (n % 2 === 0 ? "f" : "b") + n + " " + carriers[0] + "\n");
+				if (r < 2 && ((n >= bodyMax && n <= sleeve1Min) || (n >= sleeve0Max && n <= bodyMin))) {
+					kCode += ("knit - " + (n % 2 === 0 ? "f" : "b") + n + " " + carrier + "\n");
 				} else {
 					if (n % 2 === 0){
-						kCode += ("knit - f" + n + " " + carriers[0] + "\n");
+						kCode += ("knit - f" + n + " " + carrier + "\n");
 					}
 				}
 			}
 		} else {
 			for (let n = shoulderMin; n <= shoulderMax; ++n) {
 				if (n % 2 === 1){
-					kCode += ("knit + b" + n + " " + carriers[0] + "\n");
+					kCode += ("knit + b" + n + " " + carrier + "\n");
 				}
 			}
 		}
@@ -141,14 +104,14 @@ function knit(){
 	//bind off stitches on front bed
 	for (let n = shoulderMax; n >= (shoulderMin + 1); --n) {
 		if (n % 2 === 0){
-			kCode += ("knit - f" + n + " " + carriers[0] + "\n");
+			kCode += ("knit - f" + n + " " + carrier + "\n");
 			kCode += rack([n], "f", "-");
 		}
 
 	}
 
 	//transfer leftmost stictch on front bed to backbed
-	kCode += ("knit - f" + (shoulderMin) + " " + carriers[0] + "\n");
+	kCode += ("knit - f" + (shoulderMin) + " " + carrier + "\n");
 	kCode += ("rack -1" + "\n");
 	kCode += ("xfer f" + shoulderMin + " b" + (shoulderMin + 1) + "\n");
 	kCode += ("rack 0" + "\n");
@@ -156,7 +119,7 @@ function knit(){
 	//bind off stitches on back bed
 	for (let n = shoulderMin; n <= (shoulderMax - 1); ++n) {
 		if (n % 2 === 1){
-			kCode += ("knit + b" + n + " " + carriers[0] + "\n");
+			kCode += ("knit + b" + n + " " + carrier + "\n");
 			kCode += rack([n], "b", "+");
 		}
 
@@ -165,28 +128,53 @@ function knit(){
 	//knit last two stitches together to form a tail that can be unravelled carefully and knotted off
 	for (let r = 0; r <= 8; r++){
 		if (r % 2 == 0){
-			kCode += ("knit + b" + (shoulderMax - 1) + " " + carriers[0] + "\n");
-			kCode += ("knit + b" + shoulderMax + " " + carriers[0] + "\n");
+			kCode += ("knit + b" + (shoulderMax - 1) + " " + carrier + "\n");
+			kCode += ("knit + b" + shoulderMax + " " + carrier + "\n");
 		} else {
-			kCode += ("knit - b" + shoulderMax + " " + carriers[0] + "\n");
-			kCode += ("knit - b" + (shoulderMax - 1) + " " + carriers[0] + "\n");
+			kCode += ("knit - b" + shoulderMax + " " + carrier + "\n");
+			kCode += ("knit - b" + (shoulderMax - 1) + " " + carrier + "\n");
 		}
 	}
 
 
-	kCode += ("outhook " + carriers[0] + "\n");
+	kCode += ("outhook " + carrier + "\n");
 
 
 
 	writeFile(kCode);
 }
 
-function castOn(carrier, min, max, overallMax, isCastOn, ultimateMax){
+function knitSegment(carrier, min, max, height){
 	let code = "";
-	if (isCastOn){
-		code += ("inhook " + carrier + "\n");
-		code += ("miss - f" + ultimateMax + " " + carrier + "\n");
+
+	code += castOn(carrier, min, max, max+1);
+	for (var r = 0; r < height; r++){
+		if (r % 2 == 0){
+			for (let n = max; n >= min; --n) {
+				if (n % 2 === 0){
+					code += ("knit - f" + n + " " + carrier + "\n");
+				}
+			}
+		} else {
+			for (let n = min; n <= max; ++n) {
+				if (n % 2 === 1){
+					code += ("knit + b" + n + " " + carrier + "\n");
+				}
+			}
+		}
 	}
+
+	code += ("tuck - b" + (max - 2) + " " + carrier + "\n");
+	code += ("miss - b" + (min + 2) + " "+ carrier + "\n");
+	code += ("outhook " + carrier + "\n");
+
+	return code;
+
+}
+
+function castOn(carrier, min, max, overallMax){
+	let code = "";
+	code += ("inhook " + carrier + "\n");
 
 	//cast-on on the front bed first...
 	for (let n = max; n >= min; --n) {
@@ -212,9 +200,7 @@ function castOn(carrier, min, max, overallMax, isCastOn, ultimateMax){
 		}
 	}
 
-	if (isCastOn){
-		code += ("releasehook " + carrier + "\n");
-	}
+	code += ("releasehook " + carrier + "\n");
 
 	//knit waste yarn rows
 	code += knitPlainStitches(carrier, 12, min, max, false);
